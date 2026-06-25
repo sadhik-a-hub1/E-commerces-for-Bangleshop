@@ -1,0 +1,51 @@
+const multer = require("multer");
+const path = require("path");
+
+// Storage settings
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/products");
+    },
+
+    filename: (req, file, cb) => {
+
+        const productName = req.body.name
+            ? req.body.name.replace(/\s+/g, "-").toLowerCase()
+            : "product";
+
+        const uniqueName =
+            productName +
+            "-" +
+            Date.now() +
+            path.extname(file.originalname);
+
+        cb(null, uniqueName);
+    }
+});
+
+// Image validation
+const fileFilter = (req, file, cb) => {
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only image files are allowed"), false);
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    }
+});
+
+module.exports = upload;
